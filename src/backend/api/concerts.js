@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const knex = require("../database");
+
 // get concerts by id
 const getConcertsById = async (id) => {
 	try {
@@ -13,7 +14,6 @@ const getConcertsById = async (id) => {
 };
 router.get("/:id", async (request, response) => {
 	let concertsId = Number(request.params.id);
-	//console.log(concertsId);
 	getConcertsById(concertsId)
 		.then((result) => response.json(result))
 		.catch((error) => {
@@ -21,7 +21,8 @@ router.get("/:id", async (request, response) => {
 			console.log(error);
 		});
 });
-// get routes
+
+// specific number of concerts
 const getLatestLimit = async (limit) => {
 	try {
 		return await knex("concerts")
@@ -34,11 +35,8 @@ const getLatestLimit = async (limit) => {
 };
 router.get("/", async (request, response) => {
 	let limit = Number(request.query.limit);
-	//console.log(limit);
 	getLatestLimit(limit).then((result) => response.json(result));
-
 	try {
-		// knex syntax for selecting things. Look up the documentation for knex for further info
 		const concerts = await knex("concerts");
 		response.json(concerts);
 	} catch (error) {
@@ -46,6 +44,7 @@ router.get("/", async (request, response) => {
 	}
 });
 
+//Edit concerts
 const editConcerts = async ({ body, id }) => {
 	const { title, price } = body;
 	const contact = await knex.from("concerts").select("*").where({
@@ -66,7 +65,7 @@ const editConcerts = async ({ body, id }) => {
 			.update(queryDto);
 	} else return "Nothing updated!";
 };
-// put routes
+
 router.put("/:id", async (request, response) => {
 	editConcerts({
 		body: request.body,
@@ -79,8 +78,8 @@ router.put("/:id", async (request, response) => {
 		});
 });
 
+//create a concert
 router.post("/", async (request, response) => {
-	//console.log(request);
 	createConcerts({
 		body: request.body,
 	})
@@ -89,13 +88,12 @@ router.post("/", async (request, response) => {
 			response.status(400).send("Bad request").end();
 			console.log(error);
 		});
-	// try {
-	// 	// knex syntax for selecting things. Look up the documentation for knex for further info
-	// 	const concerts = await knex("concerts");
-	// 	response.json(concerts);
-	// } catch (error) {
-	// 	throw error;
-	// }
+	try {
+		const concerts = await knex("concerts");
+		response.json(concerts);
+	} catch (error) {
+		throw error;
+	}
 });
 
 const createConcerts = async ({ body }) => {
@@ -109,7 +107,8 @@ const createConcerts = async ({ body }) => {
 		price: price,
 	});
 };
-//Delete toutes
+
+//Delete concert
 const deleteConcerts = async ({ body }) => {
 	try {
 		if (!body.id) {
@@ -126,7 +125,6 @@ const deleteConcerts = async ({ body }) => {
 	}
 };
 router.delete("/", async (request, response) => {
-	//console.log(request);
 	deleteConcerts({
 		body: request.body,
 	})
